@@ -107,6 +107,10 @@ body {
   border: none !important;
 }
 
+.book-btn {
+  background-color: #17a229 !important;
+  border: none !important;
+}
 /* show */
 .show-img {
   width: 100%;
@@ -291,5 +295,25 @@ body {
   img {
     max-width: 100%;
     height: auto;
+  }
+}
+
+/* Book */
+
+.booking-card {
+  max-width: 500px;
+  width: 100%;
+  border-radius: 20px;
+  background: #f9f9f9;
+  transition: transform 0.3s ease;
+}
+
+.booking-card:hover {
+  transform: translateY(-5px);
+}
+
+@media (max-width: 576px) {
+  .booking-card {
+    padding: 1.5rem 1rem;
   }
 }

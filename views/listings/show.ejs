@@ -27,15 +27,16 @@
       </div>
     </div>
 
-    <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
+   
       <div class="col-lg-6 col-12 offset-lg-3 d-flex gap-4 my-3">
         <a href="/listings/<%= listing._id %>/edit" class="btn edit-btn btn-dark">Edit</a>
         <form action="/listings/<%= listing._id %>?_method=DELETE" method="post">
           <button class="btn delete-btn btn-dark">Delete</button>
         </form>
+        <a href="/listings/<%= listing._id %>/book" class="btn book-btn btn-dark">Book Now</a>
       </div>
       
-    <% } %>
+
 
     <div class="col-lg-8 col-12 offset-lg-3 mb-3">
       <% if(currUser) { %>

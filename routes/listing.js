@@ -44,4 +44,10 @@ router.get(
   wrapAsync(listingController.renderEditForm)
 );
 
+router.get(
+  "/:id/book",
+  isLoggedIn,
+  wrapAsync(listingController.renderBookPage)
+);
+
 module.exports = router;
