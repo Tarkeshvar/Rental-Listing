@@ -17,7 +17,7 @@
       <br>
       <div class="card-body">
         <p class="card-text">
-          Owned by <b style="color: #e0a597;"><i><%= listing.owner.username %></i></b>
+          Owned by <b style="color: #e0a597;"><i><%= listing.owner?.username || "Deleted User" %></i></b>
         </p>
         <p class="card-text"><%= listing.description %></p>
         <p class="card-text"><b>Category:</b> <%= listing.category %></p>
@@ -78,15 +78,17 @@
         <div class="card col-lg-8 col-12 ms-2 mb-3">
           <div class="card-body">
             <h6 class="card-title">
-              @<%= review.author.username %>: <%= review.comment %>
+              <%= review.author?.username || "Deleted User" %>
+: <%= review.comment %>
             </h6>
             <p class="starability-result card-text" data-rating="<%= review.rating %>"></p>
 
-            <% if(currUser && currUser._id.equals(review.author._id)) { %>
-            <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST">
-              <button class="btn btn-sm btn-dark mb-2">Delete</button>
-            </form>
-            <% } %>
+           <% if (currUser && review.author && currUser._id.equals(review.author._id)) { %>
+  <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST">
+    <button class="btn btn-sm btn-dark mb-2">Delete</button>
+  </form>
+<% } %>
+
           </div>
         </div>
         <% } %>

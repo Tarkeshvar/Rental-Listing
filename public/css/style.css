@@ -147,7 +147,7 @@ body {
 #map {
   /* Adjust width as needed */
   height: 400px; /* Adjust height as needed */
-  border: 2px solid #badeeb; /* Red border */
+  border: 2px solid #cacdce; /* Red border */
   border-radius: 15px; /* Rounded corners */
   /* 3D shadow effect */
   box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3), 0px 6px 6px rgba(0, 0, 0, 0.22);
