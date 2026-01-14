@@ -113,10 +113,9 @@
   .property-info-mini {
     display: flex;
     flex-direction: column;
-    gap: 4px; /* Space between lines */
+    gap: 4px;
   }
 
-  /* Title Styling */
   .property-info-mini h3 {
     font-size: 1.25rem;
     font-weight: 800;
@@ -126,30 +125,26 @@
     line-height: 1.2;
   }
 
-  /* Location Styling */
   .property-info-mini p {
     margin: 0;
     font-size: 0.9rem;
     color: #666666;
     display: flex;
     align-items: center;
-    gap: 6px; /* Space between icon and text */
+    gap: 6px;
   }
 
-  /* Icon Color */
   .property-info-mini p i {
-    color: #fe424d; /* Your brand red */
+    color: #fe424d;
     font-size: 0.85rem;
   }
 
-  /* Price Styling */
   .property-info-mini p strong {
     font-size: 1.1rem;
     color: #222222;
     font-weight: 700;
   }
 
-  /* Optional: "per night" text color */
   .property-info-mini p:last-child {
     margin-top: 4px;
     color: #717171;
@@ -225,7 +220,7 @@
 
         <div class="price-row price-total">
           <span>Total Amount</span>
-          <span id="totalPrice">₹0</span>
+          <span id="totalDisplayPrice">₹0</span>
         </div>
       </div>
 
@@ -240,6 +235,7 @@
     </form>
   </div>
 </div>
+
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
   const checkInInput = document.getElementById("checkIn");
@@ -249,23 +245,6 @@
     document.getElementById("pricePerNight").value
   );
   const listingId = document.getElementById("listingId").value;
-
-  // Update checkout minimum date when checkin changes
-  checkInInput.addEventListener("change", function () {
-    const checkInDate = new Date(this.value);
-    checkInDate.setDate(checkInDate.getDate() + 1);
-    checkOutInput.min = checkInDate.toISOString().split("T")[0];
-    if (
-      checkOutInput.value &&
-      new Date(checkOutInput.value) <= new Date(this.value)
-    ) {
-      checkOutInput.value = "";
-    }
-    calculatePrice();
-  });
-
-  checkOutInput.addEventListener("change", calculatePrice);
-  guestsInput.addEventListener("input", calculatePrice);
 
   function calculatePrice() {
     const checkIn = checkInInput.value;
@@ -279,48 +258,41 @@
       );
 
       if (nights > 0) {
-        const subtotal = pricePerNight * nights;
-        const serviceFee = Math.round(subtotal * 0.1); // 10% service fee
-        const total = subtotal + serviceFee;
-
+        const total = pricePerNight * nights;
         document.getElementById("nightsCount").textContent = nights;
         document.getElementById("subtotal").textContent =
-          "₹" + subtotal.toLocaleString("en-IN");
-        document.getElementById("serviceFee").textContent =
-          "₹" + serviceFee.toLocaleString("en-IN");
-        document.getElementById("totalPrice").textContent =
           "₹" + total.toLocaleString("en-IN");
+        document.getElementById("totalDisplayPrice").textContent =
+          "₹" + total.toLocaleString("en-IN");
+        return total;
       }
     }
+    return 0;
   }
 
-  // Handle booking form submission
+  checkInInput.addEventListener("change", function () {
+    const d = new Date(this.value);
+    d.setDate(d.getDate() + 1);
+    checkOutInput.min = d.toISOString().split("T")[0];
+    calculatePrice();
+  });
+
+  checkOutInput.addEventListener("change", calculatePrice);
+  guestsInput.addEventListener("input", calculatePrice);
+
   document
     .getElementById("bookingForm")
     .addEventListener("submit", async function (e) {
       e.preventDefault();
-
+      const finalTotal = calculatePrice();
       const checkIn = checkInInput.value;
       const checkOut = checkOutInput.value;
       const guests = guestsInput.value;
 
-      if (!checkIn || !checkOut || !guests) {
-        alert("Please fill in all fields");
+      if (finalTotal <= 0) {
+        alert("Invalid stay dates");
         return;
       }
-
-      const checkInDate = new Date(checkIn);
-      const checkOutDate = new Date(checkOut);
-      const nights = Math.ceil(
-        (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)
-      );
-
-      if (nights <= 0) {
-        alert("Check-out date must be after check-in date");
-        return;
-      }
-
-      const total = pricePerNight * nights;
 
       const bookBtn = document.getElementById("bookBtn");
       bookBtn.disabled = true;
@@ -328,71 +300,49 @@
         '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
 
       try {
-        // Create Razorpay order
         const orderResponse = await fetch("/bookings/create-order", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            listingId,
-            checkIn,
-            checkOut,
-            guests,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ listingId, checkIn, checkOut, guests }),
         });
 
         const orderData = await orderResponse.json();
+        if (!orderResponse.ok)
+          throw new Error(orderData.error || "Order Failed");
 
-        if (!orderResponse.ok) {
-          throw new Error(orderData.error || "Failed to create order");
-        }
-
-        // Initialize Razorpay
         const options = {
           key: orderData.keyId,
           amount: orderData.amount,
           currency: orderData.currency,
           name: "Infora",
-          description: "Booking Payment",
           order_id: orderData.orderId,
           handler: async function (response) {
-            // Verify payment
             const verifyResponse = await fetch("/bookings/verify-payment", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
+                ...response,
                 listingId,
                 checkIn,
                 checkOut,
                 guests,
-                totalPrice,
+                totalPrice: finalTotal,
               }),
             });
 
             const verifyData = await verifyResponse.json();
-
             if (verifyData.success) {
               window.location.href = verifyData.redirectUrl;
             } else {
               alert("Payment verification failed");
-              bookBtn.disabled = false;
-              bookBtn.innerHTML =
-                '<i class="fa-solid fa-lock"></i> Confirm and Pay';
+              location.reload();
             }
           },
           prefill: {
             name: "<%= currUser.username %>",
             email: "<%= currUser.email %>",
           },
-          theme: {
-            color: "#fe424d",
-          },
+          theme: { color: "#fe424d" },
           modal: {
             ondismiss: function () {
               bookBtn.disabled = false;
@@ -405,8 +355,7 @@
         const rzp = new Razorpay(options);
         rzp.open();
       } catch (error) {
-        console.error("Error:", error);
-        alert("Something went wrong. Please try again.");
+        alert(error.message);
         bookBtn.disabled = false;
         bookBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Confirm and Pay';
       }
