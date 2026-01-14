@@ -1,18 +1,134 @@
-<link rel="stylesheet" href="/css/err.css" />
+<% layout("/layouts/boilerplate.ejs") %>
 
-<h1>404</h1>
-<div class="cloak__wrapper">
-  <div class="cloak__container">
-    <div class="cloak"></div>
+<style>
+  .error-page {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: #fafafa;
+  }
+
+  .error-card {
+    max-width: 500px;
+    width: 100%;
+    background: radial-gradient(circle at top left, #ffffff 70%, #fff5f5 100%);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+  }
+
+  .error-icon {
+    font-size: 5rem;
+    color: #fe424d;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-15px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  .error-code {
+    font-size: 6rem;
+    font-weight: 900;
+    color: #f0f0f0;
+    line-height: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    letter-spacing: -5px;
+  }
+
+  .error-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .error-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+  }
+
+  .error-message {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .btn-home {
+    background: linear-gradient(135deg, #fe424d 0%, #e03844 100%);
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(254, 66, 77, 0.3);
+  }
+
+  .btn-home:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(254, 66, 77, 0.4);
+    color: white;
+  }
+
+  .back-link {
+    display: block;
+    margin-top: 1.5rem;
+    color: #888;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .back-link:hover {
+    color: #fe424d;
+  }
+</style>
+
+<div class="error-page">
+  <div class="error-card">
+    <div class="error-content">
+      <div class="error-icon">
+        <i class="fa-solid fa-map-location-dot"></i>
+      </div>
+
+      <h1 class="error-title">Page Not Found</h1>
+
+      <p class="error-message">
+        <strong><%= message %></strong><br />
+        The destination you're looking for doesn't exist or has been moved.
+        Let's get you back on track.
+      </p>
+
+      <a href="/listings" class="btn-home">
+        <i class="fa-solid fa-house"></i> Explore Listings
+      </a>
+
+      <a href="javascript:history.back()" class="back-link">
+        <i class="fa-solid fa-arrow-left-long"></i> Go Back
+      </a>
+    </div>
   </div>
-</div>
-<div class="info">
-  <h2><%= message %></h2>
-  <p>Please provide valid data.</p>
-  <a
-    href="https://infora-live.onrender.com/listings"
-    target="_blank"
-    rel="noreferrer noopener"
-    >LISTINGS</a
-  >
 </div>
