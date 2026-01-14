@@ -4,10 +4,12 @@ const User = require("../models/user");
 const razorpayInstance = require("../utils/razorpay");
 const crypto = require("crypto");
 
-// Render booking page
+/* ================================
+   Render booking page
+================================ */
 module.exports.renderBookPage = async (req, res) => {
   try {
-    let { id } = req.params;
+    const { id } = req.params;
     const listing = await Listing.findById(id).populate("owner");
 
     if (!listing) {
@@ -16,14 +18,16 @@ module.exports.renderBookPage = async (req, res) => {
     }
 
     res.render("listings/book.ejs", { listing });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     req.flash("error", "Something went wrong!");
     res.redirect("/listings");
   }
 };
 
-// Create Razorpay order
+/* ================================
+   Create Razorpay Order
+================================ */
 module.exports.createOrder = async (req, res) => {
   try {
     const { listingId, checkIn, checkOut, guests } = req.body;
@@ -33,25 +37,24 @@ module.exports.createOrder = async (req, res) => {
       return res.status(404).json({ error: "Listing not found" });
     }
 
-    // Calculate total price (NO SERVICE FEE)
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
     const nights = Math.ceil(
       (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)
     );
+
     const totalPrice = listing.price * nights;
 
-    // Create Razorpay order
     const options = {
-      amount: totalPrice * 100, // Amount in paise
+      amount: totalPrice * 100,
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
       notes: {
-        listingId: listingId,
+        listingId,
         userId: req.user._id.toString(),
-        checkIn: checkIn,
-        checkOut: checkOut,
-        guests: guests,
+        checkIn,
+        checkOut,
+        guests,
       },
     };
 
@@ -63,13 +66,15 @@ module.exports.createOrder = async (req, res) => {
       currency: order.currency,
       keyId: process.env.RAZORPAY_KEY_ID,
     });
-  } catch (error) {
-    console.error("Error creating order:", error);
+  } catch (err) {
+    console.error("Order creation error:", err);
     res.status(500).json({ error: "Failed to create order" });
   }
 };
 
-// Verify payment and create booking
+/* ================================
+   Verify Payment & Create Booking
+================================ */
 module.exports.verifyPayment = async (req, res) => {
   try {
     const {
@@ -83,82 +88,53 @@ module.exports.verifyPayment = async (req, res) => {
       totalPrice,
     } = req.body;
 
-    // Verify Razorpay signature
     const sign = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSign = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(sign.toString())
+      .update(sign)
       .digest("hex");
 
     if (razorpay_signature !== expectedSign) {
       return res.status(400).json({ error: "Invalid payment signature" });
     }
 
-    // Payment verified - Create booking
     const booking = new Booking({
       listing: listingId,
       user: req.user._id,
-      checkIn: new Date(checkIn),
-      checkOut: new Date(checkOut),
+      checkIn,
+      checkOut,
       guests: parseInt(guests),
       totalPrice: parseFloat(totalPrice),
       paymentStatus: "completed",
+      bookingStatus: "confirmed",
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
       razorpaySignature: razorpay_signature,
-      bookingStatus: "confirmed",
     });
 
     await booking.save();
 
-    // Add booking to user's bookings array
     await User.findByIdAndUpdate(req.user._id, {
       $push: { bookings: booking._id },
     });
 
-    req.flash("success", "Booking confirmed successfully!");
     res.json({
       success: true,
-      bookingId: booking._id,
-      redirectUrl: `/bookings/${booking._id}`,
+      redirectUrl: `/bookings/${booking._id}/receipt`,
     });
-  } catch (error) {
-    console.error("Error verifying payment:", error);
+  } catch (err) {
+    console.error("Payment verification error:", err);
     res.status(500).json({ error: "Payment verification failed" });
   }
 };
 
-// Show booking details
-module.exports.showBooking = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const booking = await Booking.findById(id)
-      .populate("listing")
-      .populate("user");
-
-    if (!booking) {
-      req.flash("error", "Booking not found!");
-      return res.redirect("/profile");
-    }
-
-    // Check if user is authorized
-    if (!booking.user._id.equals(req.user._id)) {
-      req.flash("error", "You are not authorized to view this booking!");
-      return res.redirect("/profile");
-    }
-
-    res.render("bookings/show.ejs", { booking });
-  } catch (error) {
-    console.error(error);
-    req.flash("error", "Something went wrong!");
-    res.redirect("/profile");
-  }
-};
-
-// Show receipt page
+/* ================================
+   Show Receipt Page (ONLY VIEW)
+================================ */
 module.exports.showReceipt = async (req, res) => {
   try {
     const { id } = req.params;
+
     const booking = await Booking.findById(id)
       .populate("listing")
       .populate("user");
@@ -168,21 +144,22 @@ module.exports.showReceipt = async (req, res) => {
       return res.redirect("/profile");
     }
 
-    // Check authorization
     if (!booking.user._id.equals(req.user._id)) {
-      req.flash("error", "Unauthorized!");
+      req.flash("error", "Unauthorized access!");
       return res.redirect("/profile");
     }
 
     res.render("bookings/receipt.ejs", { booking });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     req.flash("error", "Something went wrong!");
     res.redirect("/profile");
   }
 };
 
-// Cancel booking
+/* ================================
+   Cancel Booking
+================================ */
 module.exports.cancelBooking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -198,9 +175,8 @@ module.exports.cancelBooking = async (req, res) => {
       return res.redirect("/profile");
     }
 
-    // Check if booking is already cancelled or completed
     if (booking.bookingStatus !== "confirmed") {
-      req.flash("error", "This booking cannot be cancelled!");
+      req.flash("error", "Booking cannot be cancelled!");
       return res.redirect("/profile");
     }
 
@@ -209,9 +185,9 @@ module.exports.cancelBooking = async (req, res) => {
 
     req.flash("success", "Booking cancelled successfully!");
     res.redirect("/profile");
-  } catch (error) {
-    console.error(error);
-    req.flash("error", "Failed to cancel booking!");
+  } catch (err) {
+    console.error(err);
+    req.flash("error", "Cancellation failed!");
     res.redirect("/profile");
   }
 };
