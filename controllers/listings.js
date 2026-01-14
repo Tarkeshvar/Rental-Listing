@@ -168,8 +168,8 @@ module.exports.destroyListing = async (req, res) => {
   return res.redirect("/listings");
 };
 
-module.exports.renderBookPage = (req, res) => {
-  let { id } = req.params;
-  // Just render the 'book.ejs' page and pass listingId
-  res.render("listings/book.ejs", { listingId: id });
-};
+// module.exports.renderBookPage = (req, res) => {
+//   let { id } = req.params;
+//   // Just render the 'book.ejs' page and pass listingId
+//   res.render("listings/book.ejs", { listingId: id });
+// };

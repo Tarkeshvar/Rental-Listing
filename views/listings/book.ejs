@@ -1,18 +1,414 @@
 <% layout("/layouts/boilerplate.ejs") %>
 
-<div class="container mt-5 d-flex justify-content-center">
-  <div class="card booking-card text-center p-4 shadow">
-    <div class="card-body">
-      <h2 class="card-title mb-3">Booking Information</h2>
-      <p class="card-text fs-5">
-        For booking, please contact the owner directly.<br />
-        Thank you for visiting our rental platform!
-      </p>
-      <hr />
-      <p class="text-muted small">
-        This is a placeholder page. More features coming soon.
-      </p>
-      <a href="/listings" class="btn btn-dark mt-3">Back to Listings</a>
+<style>
+  .book-container {
+    max-width: 500px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+  }
+
+  .booking-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    border: 1px solid #eee;
+  }
+
+  .booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .property-info-mini h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+    color: #222;
+  }
+
+  .property-info-mini p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 2px 0 0 0;
+  }
+
+  .small-listing-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  .form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #777;
+    margin-bottom: 0.4rem;
+  }
+
+  .form-control {
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #e8e8e8;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .price-summary {
+    background-color: #fffcfc;
+    border: 1px dashed #fe424d;
+    padding: 1rem;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .price-total {
+    border-top: 1px solid #eee;
+    padding-top: 0.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #fe424d;
+  }
+
+  .book-now-btn {
+    background-color: #fe424d;
+    color: white;
+    border: none;
+    padding: 0.9rem;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    width: 100%;
+    transition: all 0.3s ease;
+  }
+
+  .book-now-btn:hover {
+    background-color: #e03844;
+    transform: translateY(-1px);
+  }
+
+  .payment-trust-badge {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #14d44a;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  .property-info-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Space between lines */
+  }
+
+  /* Title Styling */
+  .property-info-mini h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #222222;
+    margin: 0;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+
+  /* Location Styling */
+  .property-info-mini p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666666;
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Space between icon and text */
+  }
+
+  /* Icon Color */
+  .property-info-mini p i {
+    color: #fe424d; /* Your brand red */
+    font-size: 0.85rem;
+  }
+
+  /* Price Styling */
+  .property-info-mini p strong {
+    font-size: 1.1rem;
+    color: #222222;
+    font-weight: 700;
+  }
+
+  /* Optional: "per night" text color */
+  .property-info-mini p:last-child {
+    margin-top: 4px;
+    color: #717171;
+    font-size: 0.95rem;
+  }
+</style>
+
+<div class="book-container">
+  <div class="booking-card">
+    <div class="booking-header">
+      <div class="property-info-mini">
+        <h3><%= listing.title %></h3>
+        <p><i class="fa-solid fa-location-dot"></i> <%= listing.location %></p>
+        <p>
+          <strong>₹<%= listing.price.toLocaleString("en-IN") %></strong> / night
+        </p>
+      </div>
+      <img
+        src="<%= listing.image.url %>"
+        class="small-listing-img"
+        alt="property"
+      />
     </div>
+
+    <form id="bookingForm">
+      <input type="hidden" id="listingId" value="<%= listing._id %>" />
+      <input type="hidden" id="pricePerNight" value="<%= listing.price %>" />
+
+      <div class="row g-2">
+        <div class="col-6 mb-3">
+          <label for="checkIn" class="form-label">Check-in</label>
+          <input
+            type="date"
+            class="form-control"
+            id="checkIn"
+            required
+            min="<%= new Date().toISOString().split('T')[0] %>"
+          />
+        </div>
+        <div class="col-6 mb-3">
+          <label for="checkOut" class="form-label">Check-out</label>
+          <input
+            type="date"
+            class="form-control"
+            id="checkOut"
+            required
+            min="<%= new Date().toISOString().split('T')[0] %>"
+          />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="guests" class="form-label">Number of Guests</label>
+        <input
+          type="number"
+          class="form-control"
+          id="guests"
+          min="1"
+          max="10"
+          value="1"
+          required
+        />
+      </div>
+
+      <div class="price-summary">
+        <div class="price-row">
+          <span
+            >₹<%= listing.price.toLocaleString("en-IN") %> ×
+            <span id="nightsCount">0</span> nights</span
+          >
+          <span id="subtotal">₹0</span>
+        </div>
+
+        <div class="price-row price-total">
+          <span>Total Amount</span>
+          <span id="totalPrice">₹0</span>
+        </div>
+      </div>
+
+      <button type="submit" class="book-now-btn" id="bookBtn">
+        <i class="fa-solid fa-lock"></i> Confirm and Pay
+      </button>
+
+      <div class="payment-trust-badge">
+        <i class="fa-solid fa-shield-halved"></i>
+        Secure payment processed via <strong>Razorpay</strong>
+      </div>
+    </form>
   </div>
 </div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  const checkInInput = document.getElementById("checkIn");
+  const checkOutInput = document.getElementById("checkOut");
+  const guestsInput = document.getElementById("guests");
+  const pricePerNight = parseFloat(
+    document.getElementById("pricePerNight").value
+  );
+  const listingId = document.getElementById("listingId").value;
+
+  // Update checkout minimum date when checkin changes
+  checkInInput.addEventListener("change", function () {
+    const checkInDate = new Date(this.value);
+    checkInDate.setDate(checkInDate.getDate() + 1);
+    checkOutInput.min = checkInDate.toISOString().split("T")[0];
+    if (
+      checkOutInput.value &&
+      new Date(checkOutInput.value) <= new Date(this.value)
+    ) {
+      checkOutInput.value = "";
+    }
+    calculatePrice();
+  });
+
+  checkOutInput.addEventListener("change", calculatePrice);
+  guestsInput.addEventListener("input", calculatePrice);
+
+  function calculatePrice() {
+    const checkIn = checkInInput.value;
+    const checkOut = checkOutInput.value;
+
+    if (checkIn && checkOut) {
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      const nights = Math.ceil(
+        (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)
+      );
+
+      if (nights > 0) {
+        const subtotal = pricePerNight * nights;
+        const serviceFee = Math.round(subtotal * 0.1); // 10% service fee
+        const total = subtotal + serviceFee;
+
+        document.getElementById("nightsCount").textContent = nights;
+        document.getElementById("subtotal").textContent =
+          "₹" + subtotal.toLocaleString("en-IN");
+        document.getElementById("serviceFee").textContent =
+          "₹" + serviceFee.toLocaleString("en-IN");
+        document.getElementById("totalPrice").textContent =
+          "₹" + total.toLocaleString("en-IN");
+      }
+    }
+  }
+
+  // Handle booking form submission
+  document
+    .getElementById("bookingForm")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const checkIn = checkInInput.value;
+      const checkOut = checkOutInput.value;
+      const guests = guestsInput.value;
+
+      if (!checkIn || !checkOut || !guests) {
+        alert("Please fill in all fields");
+        return;
+      }
+
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      const nights = Math.ceil(
+        (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)
+      );
+
+      if (nights <= 0) {
+        alert("Check-out date must be after check-in date");
+        return;
+      }
+
+      const total = pricePerNight * nights;
+
+      const bookBtn = document.getElementById("bookBtn");
+      bookBtn.disabled = true;
+      bookBtn.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+      try {
+        // Create Razorpay order
+        const orderResponse = await fetch("/bookings/create-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            listingId,
+            checkIn,
+            checkOut,
+            guests,
+          }),
+        });
+
+        const orderData = await orderResponse.json();
+
+        if (!orderResponse.ok) {
+          throw new Error(orderData.error || "Failed to create order");
+        }
+
+        // Initialize Razorpay
+        const options = {
+          key: orderData.keyId,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: "Infora",
+          description: "Booking Payment",
+          order_id: orderData.orderId,
+          handler: async function (response) {
+            // Verify payment
+            const verifyResponse = await fetch("/bookings/verify-payment", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                listingId,
+                checkIn,
+                checkOut,
+                guests,
+                totalPrice,
+              }),
+            });
+
+            const verifyData = await verifyResponse.json();
+
+            if (verifyData.success) {
+              window.location.href = verifyData.redirectUrl;
+            } else {
+              alert("Payment verification failed");
+              bookBtn.disabled = false;
+              bookBtn.innerHTML =
+                '<i class="fa-solid fa-lock"></i> Confirm and Pay';
+            }
+          },
+          prefill: {
+            name: "<%= currUser.username %>",
+            email: "<%= currUser.email %>",
+          },
+          theme: {
+            color: "#fe424d",
+          },
+          modal: {
+            ondismiss: function () {
+              bookBtn.disabled = false;
+              bookBtn.innerHTML =
+                '<i class="fa-solid fa-lock"></i> Confirm and Pay';
+            },
+          },
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Something went wrong. Please try again.");
+        bookBtn.disabled = false;
+        bookBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Confirm and Pay';
+      }
+    });
+</script>

@@ -4,10 +4,13 @@
     color: white;
     border-radius: 25px;
     padding: 0 1rem 0 1rem;
+    transition: all 0.3s ease;
   }
   .search-btn:hover {
-    background-color: #fe424d;
+    background-color: #e03844;
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(254, 66, 77, 0.3);
   }
   .search-btn i {
     display: inline;
@@ -16,17 +19,124 @@
   .search-inp {
     border-radius: 25px;
     padding: 0.5rem 3rem 0.5rem 3rem;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+  }
+  .search-inp:focus {
+    border-color: #fe424d;
+    box-shadow: 0 0 0 0.2rem rgba(254, 66, 77, 0.25);
+  }
+
+  .profile-dropdown {
+    position: relative;
+  }
+
+  .profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.4rem;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .profile-btn:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: #fe424d;
+  }
+
+  .profile-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    /* Border removed as requested */
+    border: none;
+  }
+
+  .profile-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    display: none;
+    z-index: 1000;
+    overflow: hidden;
+  }
+
+  .profile-menu.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .profile-menu-item {
+    padding: 0.75rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .profile-menu-item:last-child {
+    border-bottom: none;
+  }
+
+  .profile-menu-item:hover {
+    background-color: #f8f9fa;
+    color: #fe424d;
+  }
+
+  .profile-menu-item i {
+    width: 24px;
+    color: #fe424d;
+  }
+
+  .menu-divider {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 0.5rem 0;
+  }
+
+  .infinity {
+    font-size: 1.2rem;
+  }
+
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
   }
 </style>
 
 <nav
   class="navbar navbar-expand-md navbar-light bg-light border-bottom sticky-top"
 >
-  <div class="container-fluid ms-auto">
-    <a class="navbar-brand" href="/listings"
-      ><i class="fa-solid fa-infinity ms-auto"></i>
-      <b style="color: #fe424d" class="infinity ms-auto">infora</b></a
-    >
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/listings">
+      <i class="fa-solid fa-infinity"></i>
+      <b style="color: #fe424d" class="infinity">infora</b>
+    </a>
 
     <button
       class="navbar-toggler"
@@ -59,15 +169,76 @@
           </button>
         </form>
       </div>
+
       <div class="navbar-nav ms-auto">
-        <a class="nav-item nav-link" href="/listings/new">Host with Infora</a>
+        <a class="nav-item nav-link" href="/listings/new">
+          <i class="fa-solid fa-house-user"></i> Host with Infora
+        </a>
+
         <% if(!currUser){ %>
         <a class="nav-item nav-link" href="/signup"><b>Signup</b></a>
         <a class="nav-item nav-link" href="/login"><b>Login</b></a>
-        <% } %> <% if(currUser){ %>
-        <a class="nav-item nav-link" href="/logout"><b>Logout</b></a>
+        <% } %><% if(currUser){ %>
+        <div class="profile-dropdown">
+          <button class="profile-btn" id="profileBtn" type="button">
+            <img
+              src="<%= currUser.avatar?.url || 'https://via.placeholder.com/150' %>"
+              alt="Profile"
+              class="profile-avatar"
+            />
+          </button>
+
+          <div class="profile-menu" id="profileMenu">
+            <a href="/profile" class="profile-menu-item">
+              <i class="fa-solid fa-user"></i>
+              <span>My Profile</span>
+            </a>
+            <a href="/profile" class="profile-menu-item">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span>My Bookings</span>
+            </a>
+            <a
+              href="/listings?owner=<%= currUser._id %>"
+              class="profile-menu-item"
+            >
+              <i class="fa-solid fa-home"></i>
+              <span>My Listings</span>
+            </a>
+            <a href="/profile/edit" class="profile-menu-item">
+              <i class="fa-solid fa-gear"></i>
+              <span>Settings</span>
+            </a>
+            <div class="menu-divider"></div>
+            <a href="/logout" class="profile-menu-item">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Logout</span>
+            </a>
+          </div>
+        </div>
         <% } %>
       </div>
     </div>
   </div>
 </nav>
+
+<script>
+  // Profile dropdown toggle
+  document.addEventListener("DOMContentLoaded", function () {
+    const profileBtn = document.getElementById("profileBtn");
+    const profileMenu = document.getElementById("profileMenu");
+
+    if (profileBtn && profileMenu) {
+      profileBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        profileMenu.classList.toggle("show");
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener("click", function (e) {
+        if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
+          profileMenu.classList.remove("show");
+        }
+      });
+    }
+  });
+</script>

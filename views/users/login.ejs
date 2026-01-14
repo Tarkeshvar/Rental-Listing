@@ -1,20 +1,342 @@
 <% layout("/layouts/boilerplate.ejs") %>
 
-<div class="row mt-3">
-    <h1 class="col-6 offset-3">Login</h1>
-    <div class="col-6 offset-3">
-        <form action="/login" method="POST" novalidate class="needs-validation">
-            <div class="mb-3">
-                <table for="username" class="form-label">Username</table>
-                <input type="text" id="username" name="username", placeholder="" class="form-control" required>
-            </div>
+<style>
+  .auth-container {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    /* background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%); */
+  }
 
-            <div class="mb-3">
-                <table for="password" class="form-label">Password</table>
-                <input type="password" id="password" name="password", placeholder="" class="form-control" required>
-           
-            </div>
-            <button class="btn btn-success">Login</button>
-        </form>
+  .auth-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(254, 66, 77, 0.1);
+    overflow: hidden;
+    max-width: 1000px;
+    width: 100%;
+    display: flex;
+    min-height: 600px;
+  }
+
+  .auth-side {
+    flex: 1;
+    background: linear-gradient(135deg, #fe424d 0%, #e03844 100%);
+    color: white;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-side::before {
+    content: "";
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    top: -100px;
+    right: -100px;
+  }
+
+  .auth-side::after {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    bottom: -50px;
+    left: -50px;
+  }
+
+  .auth-side-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-side h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  .auth-side p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    margin-bottom: 2rem;
+  }
+
+  .auth-illustration {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 2rem;
+  }
+
+  .auth-form-side {
+    flex: 1;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .auth-form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .auth-form-header h1 {
+    color: #333;
+    font-weight: bold;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .auth-form-header p {
+    color: #666;
+    font-size: 1rem;
+  }
+
+  .input-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .input-group label {
+    display: inline-block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .input-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .input-wrapper i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fe424d;
+    font-size: 1.1rem;
+    pointer-events: none;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 3rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    box-sizing: border-box;
+  }
+
+  .input-group input:focus {
+    outline: none;
+    border-color: #fe424d;
+    box-shadow: 0 0 0 4px rgba(254, 66, 77, 0.1);
+  }
+
+  .input-group input::placeholder {
+    color: #999;
+  }
+
+  .forgot-link {
+    text-align: right;
+    margin-bottom: 1.5rem;
+    margin-top: -0.5rem;
+  }
+
+  .forgot-link a {
+    color: #fe424d;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .forgot-link a:hover {
+    color: #e03844;
+    text-decoration: underline;
+  }
+
+  .btn-auth {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #fe424d 0%, #e03844 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(254, 66, 77, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-auth:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(254, 66, 77, 0.4);
+  }
+
+  .auth-divider {
+    text-align: center;
+    margin: 1.5rem 0;
+    position: relative;
+  }
+
+  .auth-divider::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    background: #e0e0e0;
+  }
+
+  .auth-divider span {
+    background: white;
+    padding: 0 1rem;
+    position: relative;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .auth-switch {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #666;
+  }
+
+  .auth-switch a {
+    color: #fe424d;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 0.25rem;
+  }
+
+  .auth-switch a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .auth-card {
+      flex-direction: column;
+    }
+
+    .auth-side {
+      padding: 2rem;
+    }
+
+    .auth-side h2 {
+      font-size: 1.8rem;
+    }
+
+    .auth-illustration {
+      width: 150px;
+      height: 150px;
+    }
+
+    .auth-form-side {
+      padding: 2rem;
+    }
+  }
+</style>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-side">
+      <div class="auth-side-content">
+        <div class="auth-illustration">
+          <i
+            class="fa-solid fa-infinity"
+            style="font-size: 8rem; color: rgb(233, 222, 222)"
+          ></i>
+        </div>
+        <h2>Welcome to Infora!</h2>
+        <p>Discover amazing places and create unforgettable memories</p>
+        <div class="mt-4">
+          <i
+            class="fa-solid fa-star"
+            style="font-size: 1.5rem; margin: 0 0.5rem"
+          ></i>
+          <i
+            class="fa-solid fa-heart"
+            style="font-size: 1.5rem; margin: 0 0.5rem"
+          ></i>
+          <i
+            class="fa-solid fa-globe"
+            style="font-size: 1.5rem; margin: 0 0.5rem"
+          ></i>
+        </div>
+      </div>
     </div>
+
+    <div class="auth-form-side">
+      <div class="auth-form-header">
+        <h1>Welcome Back</h1>
+        <p>Login to continue your journey</p>
+      </div>
+
+      <form action="/login" method="POST">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-user"></i>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="Enter your username"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-lock"></i>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="forgot-link">
+          <a href="#">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn-auth">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>Login</span>
+        </button>
+
+        <div class="auth-switch">
+          Don't have an account? <a href="/signup">Sign up now</a>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

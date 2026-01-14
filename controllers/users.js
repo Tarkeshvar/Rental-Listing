@@ -1,10 +1,11 @@
 const User = require("../models/user.js");
 
 module.exports.renderSignupForm = (req, res) => {
-  res.render("users/sg.ejs");
+  res.render("users/signup.ejs"); // Changed from sg.ejs to signup.ejs
 };
 
-module.exports.signup = async (req, res) => {
+module.exports.signup = async (req, res, next) => {
+  // Added 'next' parameter
   try {
     let { username, email, password } = req.body;
     const newUser = new User({ email, username });
@@ -14,7 +15,10 @@ module.exports.signup = async (req, res) => {
       if (err) {
         return next(err);
       }
-      req.flash("success", "Welcome to Infora!");
+      req.flash(
+        "success",
+        "Welcome to Infora! Your account has been created successfully."
+      );
       res.redirect("/listings");
     });
   } catch (e) {
@@ -24,21 +28,22 @@ module.exports.signup = async (req, res) => {
 };
 
 module.exports.renderLoginForm = (req, res) => {
-  res.render("users/sg.ejs");
+  res.render("users/login.ejs"); // Changed from sg.ejs to login.ejs
 };
 
 module.exports.login = async (req, res) => {
-  req.flash("success", "Welcome back to Infora!");
+  req.flash("success", `Welcome back, ${req.user.username}!`); // More personalized message
   let redirectUrl = res.locals.redirectUrl || "/listings";
   res.redirect(redirectUrl);
 };
 
-module.exports.logout = (req, res) => {
+module.exports.logout = (req, res, next) => {
+  // Added 'next' parameter
   req.logout((err) => {
     if (err) {
       return next(err);
     }
-    req.flash("success", "You are logged out!");
+    req.flash("success", "You have been logged out successfully!");
     res.redirect("/listings");
   });
 };

@@ -19,8 +19,9 @@ const User = require("./models/user.js");
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
+const bookingRouter = require("./routes/booking.js"); // NEW
+const profileRouter = require("./routes/profile.js"); // NEW
 
-// const MONGO_URL = "mongodb://127.0.0.1:27017/wonderlust";
 const dbUrl = process.env.ATLASDB_URL;
 
 app.set("view engine", "ejs");
@@ -29,7 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
-app.use(express.json());
+app.use(express.json()); // Important for Razorpay API calls
 
 main()
   .then(() => {
@@ -69,11 +70,6 @@ const sessionOptions = {
   },
 };
 
-// Root route
-// app.get("/", (req, res) => {
-//   res.send("i am root");
-// });
-
 // Session and flash middleware
 app.use(session(sessionOptions));
 app.use(flash());
@@ -93,23 +89,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// Demo User
-// app.get("/demouser",async(req, res)=>{
-//     let fakeUser = new User({
-//         email:"abc@gmail.com",
-//         username:"delta-student",
-//     });
-//     let registeredUser = await User.register(fakeUser, "helloworld");
-//     res.send(registeredUser);
-// });
-
-// express router
+// Express routers
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
+app.use("/", bookingRouter); // NEW - Booking routes
+app.use("/", profileRouter); // NEW - Profile routes
 
 // ERROR HANDLER
-
 app.all("*", (req, res, next) => {
   next(new ExpressError(404, "Page Not Found!"));
 });
@@ -119,7 +106,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render("listings/err.ejs", { message });
 });
 
-const PORT = process.env.PORT || 8080; // Use Render’s port dynamically
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
