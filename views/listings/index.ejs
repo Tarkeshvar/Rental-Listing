@@ -1,22 +1,25 @@
 <% layout("/layouts/boilerplate.ejs") %>
 
 <style>
-  /* Hero Slider Section */
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Hero Slider */
   .hero-slider {
     position: relative;
-    width: 100%;
     height: 320px;
     overflow: hidden;
     margin-bottom: 2rem;
     border-radius: 0 0 16px 16px;
+    background: #f0f0f0;
   }
 
   .slide {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     opacity: 0;
-    transition: opacity 1s ease-in-out;
+    transition: opacity 1s;
   }
 
   .slide.active {
@@ -31,19 +34,16 @@
 
   .slide-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background: linear-gradient(
       to bottom,
       rgba(0, 0, 0, 0.2),
       rgba(0, 0, 0, 0.5)
     );
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
     color: white;
     text-align: center;
     padding: 2rem;
@@ -58,20 +58,17 @@
 
   .slide-overlay p {
     font-size: 1.1rem;
-    font-weight: 300;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
   }
 
-  /* Filters Section */
+  /* Filters */
   #filters {
     display: flex;
-    align-items: center;
     gap: 0.5rem;
     padding: 1rem 0;
     overflow-x: auto;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     scrollbar-width: none;
-    -ms-overflow-style: none;
   }
 
   #filters::-webkit-scrollbar {
@@ -87,7 +84,7 @@
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s;
     white-space: nowrap;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
@@ -107,12 +104,10 @@
     font-size: 1.1rem;
     color: #fe424d;
   }
-
   .filter p {
     margin: 0;
     font-size: 0.85rem;
     font-weight: 500;
-    color: #333;
   }
 
   .tax-toggle {
@@ -122,7 +117,6 @@
     background: white;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     margin-left: auto;
     white-space: nowrap;
   }
@@ -131,17 +125,12 @@
     background-color: #fe424d;
     border-color: #fe424d;
   }
-
   .form-check-label {
     font-size: 0.85rem;
     font-weight: 500;
   }
 
-  /* Listings Section */
-  .listings-container {
-    margin-bottom: 4rem;
-  }
-
+  /* Listing Cards */
   .listing-link {
     text-decoration: none;
     color: inherit;
@@ -149,10 +138,9 @@
 
   .listing-card {
     background: white;
-    border: none;
     border-radius: 14px;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     margin-bottom: 1.5rem;
     position: relative;
@@ -160,29 +148,50 @@
 
   .listing-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .listing-img-wrapper {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+    overflow: hidden;
   }
 
   .listing-card img {
     width: 100%;
-    height: 260px;
+    height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s;
   }
 
   .listing-card:hover img {
-    transform: scale(1.05);
+    transform: scale(1.08);
   }
 
-  .card-img-overlay {
-    background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.3));
+  /* Lazy loading skeleton */
+  .listing-card img[loading="lazy"]:not([src]) {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 
   .listing-category {
     position: absolute;
     top: 12px;
     right: 12px;
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     padding: 0.4rem 0.8rem;
     border-radius: 20px;
     display: flex;
@@ -200,38 +209,36 @@
   }
 
   .card-body {
-    padding: 1.1rem;
+    padding: 1.2rem;
   }
-
-  .card-body .card-text {
-    margin: 0;
-  }
-
   .card-body b {
-    font-size: 1rem;
+    font-size: 1.05rem;
     color: #222;
     display: block;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .card-body .price {
-    font-size: 0.95rem;
-    color: #333;
-    font-weight: 600;
+    font-size: 1rem;
+    color: #fe424d;
+    font-weight: 700;
   }
 
   .tax-info {
     font-size: 0.7rem;
     color: #666;
-    font-weight: 400;
     display: none;
+    margin-left: 0.3rem;
   }
 
-  /* Features Section */
+  /* Features */
   .features-section {
-    background: white;
+    background: linear-gradient(135deg, #fff5f6 0%, #ffffff 100%);
     padding: 3rem 0;
-    margin-bottom: 3rem;
+    margin: 3rem 0;
     border-radius: 16px;
   }
 
@@ -239,14 +246,13 @@
     text-align: center;
     font-size: 2rem;
     font-weight: 700;
-    color: #222;
-    margin-bottom: 3rem;
+    margin-bottom: 2.5rem;
   }
 
   .feature-card {
     text-align: center;
-    padding: 2rem 1rem;
-    transition: all 0.3s ease;
+    padding: 1.5rem 1rem;
+    transition: transform 0.3s;
   }
 
   .feature-card:hover {
@@ -256,23 +262,25 @@
   .feature-icon {
     width: 70px;
     height: 70px;
-    background: #fff5f6;
+    background: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1.5rem;
-    transition: all 0.3s ease;
+    margin: 0 auto 1rem;
+    box-shadow: 0 4px 12px rgba(254, 66, 77, 0.15);
+    transition: all 0.3s;
   }
 
   .feature-card:hover .feature-icon {
     background: #fe424d;
+    transform: scale(1.1);
   }
 
   .feature-icon i {
     font-size: 2rem;
     color: #fe424d;
-    transition: all 0.3s ease;
+    transition: color 0.3s;
   }
 
   .feature-card:hover .feature-icon i {
@@ -282,34 +290,32 @@
   .feature-card h4 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #222;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.5rem;
   }
 
   .feature-card p {
     font-size: 0.9rem;
     color: #666;
-    line-height: 1.6;
     margin: 0;
   }
 
-  /* Info Section */
-  .info-section {
-    background: linear-gradient(135deg, #e1d7d8 0%, #eaa6a6 100%);
+  /* CTA Section */
+  .cta-section {
+    background: linear-gradient(135deg, #fe424d 0%, #ff6b6b 100%);
     color: white;
     padding: 4rem 2rem;
     border-radius: 16px;
     text-align: center;
-    margin-bottom: 3rem;
+    margin: 3rem 0;
+    box-shadow: 0 8px 24px rgba(254, 66, 77, 0.25);
   }
 
-  .info-section h2 {
+  .cta-section h2 {
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: 1rem;
   }
-
-  .info-section p {
+  .cta-section p {
     font-size: 1.1rem;
     margin-bottom: 2rem;
     opacity: 0.95;
@@ -317,14 +323,13 @@
 
   .cta-button {
     display: inline-block;
-    padding: 0.9rem 2.5rem;
+    padding: 1rem 2.5rem;
     background: white;
     color: #fe424d;
     border-radius: 30px;
     text-decoration: none;
     font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   }
 
@@ -334,9 +339,39 @@
     color: #fe424d;
   }
 
-  /* Scrollable Section */
+  /* Stats Section */
+  .stats-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin: 3rem 0;
+    padding: 2rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fe424d;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+  }
+
+  /* Scrollable Sections */
   .scrollable-section {
-    margin-bottom: 3rem;
+    margin: 3rem 0;
   }
 
   .section-header {
@@ -358,7 +393,7 @@
     text-decoration: none;
     font-weight: 600;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
+    transition: color 0.3s;
   }
 
   .view-all:hover {
@@ -377,12 +412,10 @@
   .scroll-container::-webkit-scrollbar {
     height: 6px;
   }
-
   .scroll-container::-webkit-scrollbar-track {
     background: #f0f0f0;
     border-radius: 10px;
   }
-
   .scroll-container::-webkit-scrollbar-thumb {
     background: #fe424d;
     border-radius: 10px;
@@ -394,7 +427,7 @@
     border-radius: 14px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+    transition: all 0.3s;
     cursor: pointer;
   }
 
@@ -407,6 +440,7 @@
     width: 100%;
     height: 180px;
     object-fit: cover;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
   }
 
   .scroll-card-body {
@@ -431,38 +465,20 @@
     .hero-slider {
       height: 250px;
     }
-
     .slide-overlay h1 {
       font-size: 1.8rem;
     }
-
-    .slide-overlay p {
-      font-size: 0.95rem;
-    }
-
-    .listing-card img {
+    .listing-img-wrapper {
       height: 220px;
     }
-
-    #filters {
-      padding: 0.8rem 0;
-    }
-
-    .tax-toggle {
-      margin-left: 0;
-    }
-
     .features-section h2 {
       font-size: 1.5rem;
-      margin-bottom: 2rem;
     }
-
-    .info-section h2 {
+    .cta-section h2 {
       font-size: 1.5rem;
     }
-
-    .info-section p {
-      font-size: 1rem;
+    .stat-number {
+      font-size: 2rem;
     }
   }
 
@@ -471,40 +487,20 @@
       height: 200px;
       border-radius: 0 0 12px 12px;
     }
-
     .slide-overlay h1 {
       font-size: 1.4rem;
     }
-
     .slide-overlay p {
       font-size: 0.85rem;
     }
-
     .filter {
       padding: 0.5rem 0.8rem;
     }
-
-    .filter i {
-      font-size: 1rem;
-    }
-
-    .filter p {
-      font-size: 0.8rem;
-    }
-
-    .tax-toggle {
-      padding: 0.5rem 0.8rem;
-    }
-
-    .form-check-label {
-      font-size: 0.8rem;
-    }
-
-    .listing-card img {
+    .listing-img-wrapper {
       height: 200px;
     }
-    #filters {
-      gap: 0.1rem 0.8rem;
+    .tax-toggle {
+      margin-left: 0;
     }
   }
 </style>
@@ -513,8 +509,9 @@
 <div class="hero-slider">
   <div class="slide active">
     <img
-      src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200"
+      src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&q=80"
       alt="Luxury Hotel"
+      loading="eager"
     />
     <div class="slide-overlay">
       <h1>Find Your Perfect Stay</h1>
@@ -523,8 +520,9 @@
   </div>
   <div class="slide">
     <img
-      src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200"
+      src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&auto=format&q=80"
       alt="Beach Resort"
+      loading="lazy"
     />
     <div class="slide-overlay">
       <h1>Escape to Paradise</h1>
@@ -533,8 +531,9 @@
   </div>
   <div class="slide">
     <img
-      src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200"
+      src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&q=80"
       alt="Mountain View"
+      loading="lazy"
     />
     <div class="slide-overlay">
       <h1>Adventure Awaits</h1>
@@ -594,16 +593,16 @@
   </div>
 
   <!-- Listings -->
-  <div class="listings-container">
-    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-1">
-      <% if (allListings.length === 0) { %>
-      <div class="col-12">
-        <h3>No listings found for "<%= query %>". Try another location.</h3>
-      </div>
-      <% } else { %> <% for(let listing of allListings) { %>
-      <div class="col">
-        <a href="/listings/<%= listing._id %>" class="listing-link">
-          <div class="card listing-card">
+  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-1">
+    <% if (allListings.length === 0) { %>
+    <div class="col-12">
+      <h3>No listings found. Try another search.</h3>
+    </div>
+    <% } else { %> <% for(let listing of allListings) { %>
+    <div class="col">
+      <a href="/listings/<%= listing._id %>" class="listing-link">
+        <div class="card listing-card">
+          <div class="listing-img-wrapper">
             <% if(listing.category) { %>
             <div class="listing-category">
               <% if(listing.category === 'Mountains') { %>
@@ -627,75 +626,70 @@
             </div>
             <% } %>
             <img
-              class="card-img-top"
               src="<%= listing.image.url %>"
-              alt="listing_image"
+              alt="<%= listing.title %>"
+              loading="lazy"
             />
-            <div class="card-img-overlay"></div>
-            <div class="card-body">
-              <div class="card-text">
-                <b><%= listing.title %></b>
-                <span class="price"
-                  >₹<%= listing.price.toLocaleString("en-IN") %> / Night</span
-                >
-                <span class="tax-info">+18% GST</span>
-              </div>
+          </div>
+          <div class="card-body">
+            <b><%= listing.title %></b>
+            <div>
+              <span class="price"
+                >₹<%= listing.price.toLocaleString("en-IN") %> / night</span
+              >
+              <span class="tax-info">+18% GST</span>
             </div>
           </div>
-        </a>
-      </div>
-      <% } %> <% } %>
+        </div>
+      </a>
     </div>
+    <% } %> <% } %>
   </div>
 
   <!-- Features Section -->
   <div class="features-section">
     <h2>Why Choose Infora?</h2>
     <div class="row">
-      <div class="col-lg-3 col-md-6 col-sm-6">
+      <div class="col-lg-3 col-md-6 col-6">
         <div class="feature-card">
           <div class="feature-icon">
             <i class="fa-solid fa-shield-halved"></i>
           </div>
           <h4>Secure Booking</h4>
-          <p>
-            Your bookings are protected with industry-leading security standards
-          </p>
+          <p>Protected with industry-leading security</p>
         </div>
       </div>
-      <div class="col-lg-3 col-md-6 col-sm-6">
+      <div class="col-lg-3 col-md-6 col-6">
         <div class="feature-card">
           <div class="feature-icon">
             <i class="fa-solid fa-tags"></i>
           </div>
           <h4>Best Prices</h4>
-          <p>
-            Get competitive rates and exclusive deals on thousands of properties
-          </p>
+          <p>Competitive rates and exclusive deals</p>
         </div>
       </div>
-      <div class="col-lg-3 col-md-6 col-sm-6">
+      <div class="col-lg-3 col-md-6 col-6">
         <div class="feature-card">
           <div class="feature-icon">
             <i class="fa-solid fa-headset"></i>
           </div>
           <h4>24/7 Support</h4>
-          <p>Our dedicated team is always ready to assist you anytime</p>
+          <p>Always ready to assist you anytime</p>
         </div>
       </div>
-      <div class="col-lg-3 col-md-6 col-sm-6">
+      <div class="col-lg-3 col-md-6 col-6">
         <div class="feature-card">
           <div class="feature-icon">
             <i class="fa-solid fa-star"></i>
           </div>
           <h4>Quality Stays</h4>
-          <p>Verified properties with genuine reviews from real travelers</p>
+          <p>Verified properties with genuine reviews</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Scrollable Section: Popular Destinations -->
+  <!-- Popular Destinations -->
   <div class="scrollable-section">
     <div class="section-header">
       <h3>Popular Destinations</h3>
@@ -706,8 +700,9 @@
     <div class="scroll-container">
       <div class="scroll-card">
         <img
-          src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=400"
-          alt="Destination"
+          src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=400&auto=format&q=80"
+          alt="Paris"
+          loading="lazy"
         />
         <div class="scroll-card-body">
           <h5>Paris, France</h5>
@@ -716,8 +711,9 @@
       </div>
       <div class="scroll-card">
         <img
-          src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400"
-          alt="Destination"
+          src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&auto=format&q=80"
+          alt="London"
+          loading="lazy"
         />
         <div class="scroll-card-body">
           <h5>London, UK</h5>
@@ -726,8 +722,9 @@
       </div>
       <div class="scroll-card">
         <img
-          src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=400"
-          alt="Destination"
+          src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=400&auto=format&q=80"
+          alt="New York"
+          loading="lazy"
         />
         <div class="scroll-card-body">
           <h5>New York, USA</h5>
@@ -736,8 +733,9 @@
       </div>
       <div class="scroll-card">
         <img
-          src="https://images.unsplash.com/photo-1528164344705-47542687000d?w=400"
-          alt="Destination"
+          src="https://images.unsplash.com/photo-1528164344705-47542687000d?w=400&auto=format&q=80"
+          alt="Dubai"
+          loading="lazy"
         />
         <div class="scroll-card-body">
           <h5>Dubai, UAE</h5>
@@ -746,8 +744,9 @@
       </div>
       <div class="scroll-card">
         <img
-          src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400"
-          alt="Destination"
+          src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&auto=format&q=80"
+          alt="Bali"
+          loading="lazy"
         />
         <div class="scroll-card-body">
           <h5>Bali, Indonesia</h5>
@@ -757,14 +756,34 @@
     </div>
   </div>
 
-  <!-- Info Section with CTA -->
-  <div class="info-section">
+  <!-- Stats Section -->
+  <div class="stats-section">
+    <div class="stat-item">
+      <div class="stat-number">2M+</div>
+      <div class="stat-label">Happy Travelers</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">50K+</div>
+      <div class="stat-label">Properties Listed</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">180+</div>
+      <div class="stat-label">Countries Covered</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">4.8★</div>
+      <div class="stat-label">Average Rating</div>
+    </div>
+  </div>
+
+  <!-- CTA Section -->
+  <div class="cta-section">
     <h2>Ready to Start Your Journey?</h2>
     <p>Join thousands of travelers who trust Infora for their perfect stays</p>
     <a href="/listings/new" class="cta-button">Become a Host</a>
   </div>
 
-  <!-- Scrollable Section: Unique Stays -->
+  <!-- Unique Stays -->
   <div class="scrollable-section">
     <div class="section-header">
       <h3>Unique Stays</h3>
@@ -775,8 +794,9 @@
     <div class="scroll-container">
       <div class="scroll-card">
         <img
-          src="https://images.unsplash.com/photo-1602941525421-8f8b81d3edbb?w=400"
-          alt="Unique Stay"
+          src="https://images.unsplash.com/photo-1602941525421-8f8b81d3edbb?w=400&auto=format&q=80"
+          alt="Treehouse"
+          loading="lazy"
         />
         <div class="scroll-card-body">
           <h5>Treehouse Retreat</h5>
@@ -785,8 +805,9 @@
       </div>
       <div class="scroll-card">
         <img
-          src="https://images.unsplash.com/photo-1518602164578-cd0074062767?w=400"
-          alt="Unique Stay"
+          src="https://images.unsplash.com/photo-1518602164578-cd0074062767?w=400&auto=format&q=80"
+          alt="Beach Villa"
+          loading="lazy"
         />
         <div class="scroll-card-body">
           <h5>Beach Villa</h5>
@@ -795,8 +816,9 @@
       </div>
       <div class="scroll-card">
         <img
-          src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400"
-          alt="Unique Stay"
+          src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400&auto=format&q=80"
+          alt="Mountain Cabin"
+          loading="lazy"
         />
         <div class="scroll-card-body">
           <h5>Mountain Cabin</h5>
@@ -805,8 +827,9 @@
       </div>
       <div class="scroll-card">
         <img
-          src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400"
-          alt="Unique Stay"
+          src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&auto=format&q=80"
+          alt="Castle"
+          loading="lazy"
         />
         <div class="scroll-card-body">
           <h5>Luxury Castle</h5>
@@ -823,45 +846,37 @@
   const slides = document.querySelectorAll(".slide");
 
   function showSlide(n) {
-    slides.forEach((slide) => slide.classList.remove("active"));
+    slides.forEach((s) => s.classList.remove("active"));
     currentSlide = (n + slides.length) % slides.length;
     slides[currentSlide].classList.add("active");
   }
 
-  setInterval(() => {
-    showSlide(currentSlide + 1);
-  }, 5000);
+  setInterval(() => showSlide(currentSlide + 1), 5000);
 
   // Tax Toggle
-  let taxSwitch = document.getElementById("flexSwitchCheckDefault");
-  taxSwitch.addEventListener("click", () => {
-    let taxInfo = document.getElementsByClassName("tax-info");
-    for (info of taxInfo) {
-      if (info.style.display != "inline") {
-        info.style.display = "inline";
-      } else {
-        info.style.display = "none";
-      }
-    }
-  });
+  document
+    .getElementById("flexSwitchCheckDefault")
+    .addEventListener("click", () => {
+      document.querySelectorAll(".tax-info").forEach((info) => {
+        info.style.display =
+          info.style.display === "inline" ? "none" : "inline";
+      });
+    });
 
   // Filter functionality
   document.querySelectorAll(".filter").forEach((filter) => {
     filter.addEventListener("click", function () {
       const category = this.getAttribute("data-category");
       if (category) {
-        document
-          .querySelectorAll(".filter")
-          .forEach((f) => f.classList.remove("active"));
-        this.classList.add("active");
         window.location.href = `/listings?category=${category}`;
       }
     });
   });
 
-  // Set active filter based on URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const activeCategory = urlParams.get("category");
+  // Set active filter from URL
+  const activeCategory = new URLSearchParams(window.location.search).get(
+    "category"
+  );
   if (activeCategory) {
     document.querySelectorAll(".filter").forEach((filter) => {
       if (filter.getAttribute("data-category") === activeCategory) {
